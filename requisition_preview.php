@@ -165,8 +165,8 @@ if ($selected_requisition) {
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
-        <h3>📋 Saved Requisitions
-            <button class="btn btn-RSMI">Export Requisitions to RSMI</button>
+        <h3>📋 Saved RIS
+            <button class="btn btn-RSMI">Export RIS to RSMI</button>
         </h3>
         <?php if ($saved_requisitions && $saved_requisitions->num_rows > 0): ?>
             <?php while ($req = $saved_requisitions->fetch_assoc()): ?>
@@ -184,7 +184,7 @@ if ($selected_requisition) {
             <?php endwhile; ?>
         <?php else: ?>
             <div class="no-requisitions">
-                No saved requisitions found.
+                No saved RIS found.
             </div>
         <?php endif; ?>
     </div>
