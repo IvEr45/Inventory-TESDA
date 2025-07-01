@@ -67,26 +67,29 @@ if ($requisition && !empty($requisition['purpose'])) {
     echo "<tr><td><strong>Purpose:</strong></td><td colspan='7'>" . htmlspecialchars($requisition['purpose']) . "</td></tr>";
 }
 
-// Add signature section
+// Add signature section with the new "Received by" column
 echo "<tr><td colspan='8'>&nbsp;</td></tr>";
-echo "<tr><td colspan='2'>&nbsp;</td><td colspan='2'><strong>Requested by:</strong></td><td colspan='2'><strong>Approved by:</strong></td><td colspan='2'><strong>Issued by:</strong></td></tr>";
-echo "<tr><td colspan='2'><strong>Signature:</strong></td><td colspan='2'>&nbsp;</td><td colspan='2'>&nbsp;</td><td colspan='2'>&nbsp;</td></tr>";
+echo "<tr><td colspan='2'>&nbsp;</td><td colspan='2'><strong>Requested by:</strong></td><td><strong>Approved by:</strong></td><td><strong>Issued by:</strong></td><td colspan='2'><strong>Received by:</strong></td></tr>";
+echo "<tr><td colspan='2'><strong>Signature:</strong></td><td colspan='2'>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td colspan='2'>&nbsp;</td></tr>";
 
 if ($requisition) {
     echo "<tr><td colspan='2'><strong>Printed Name:</strong></td>";
     echo "<td colspan='2'>" . htmlspecialchars($requisition['requesting_officer_name']) . "</td>";
-    echo "<td colspan='2'>" . htmlspecialchars($requisition['approved_by_name']) . "</td>";
-    echo "<td colspan='2'>" . htmlspecialchars($requisition['issued_by_name']) . "</td></tr>";
+    echo "<td>" . htmlspecialchars($requisition['approved_by_name']) . "</td>";
+    echo "<td>" . htmlspecialchars($requisition['issued_by_name']) . "</td>";
+    echo "<td colspan='2'>" . htmlspecialchars($requisition['received_by_name'] ?? '') . "</td></tr>";
     
     echo "<tr><td colspan='2'><strong>Designation:</strong></td>";
     echo "<td colspan='2'>" . htmlspecialchars($requisition['requesting_officer_designation']) . "</td>";
-    echo "<td colspan='2'>" . htmlspecialchars($requisition['approved_by_designation']) . "</td>";
-    echo "<td colspan='2'>" . htmlspecialchars($requisition['issued_by_designation']) . "</td></tr>";
+    echo "<td>" . htmlspecialchars($requisition['approved_by_designation']) . "</td>";
+    echo "<td>" . htmlspecialchars($requisition['issued_by_designation']) . "</td>";
+    echo "<td colspan='2'>" . htmlspecialchars($requisition['received_by_designation'] ?? '') . "</td></tr>";
     
     echo "<tr><td colspan='2'><strong>Date:</strong></td>";
     echo "<td colspan='2'>" . htmlspecialchars($requisition['requesting_officer_date']) . "</td>";
-    echo "<td colspan='2'>" . htmlspecialchars($requisition['approved_by_date']) . "</td>";
-    echo "<td colspan='2'>" . htmlspecialchars($requisition['issued_by_date']) . "</td></tr>";
+    echo "<td>" . htmlspecialchars($requisition['approved_by_date']) . "</td>";
+    echo "<td>" . htmlspecialchars($requisition['issued_by_date']) . "</td>";
+    echo "<td colspan='2'>" . htmlspecialchars($requisition['received_by_date'] ?? '') . "</td></tr>";
 }
 
 echo "</table>";

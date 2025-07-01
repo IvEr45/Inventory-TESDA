@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 23, 2025 at 04:45 PM
+-- Generation Time: Jul 01, 2025 at 07:15 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -125,8 +125,7 @@ INSERT INTO `items` (`id`, `stock_no`, `description`, `unit`) VALUES
 (84, 'A.03.b', 'ALCOHOL, 70% ethyl/isopropyl, 500ml', 'bottle'),
 (85, 'A.03.a', 'ALCOHOL, 70% ethy/isopropyl, with moisturizer, gallon', 'gallon'),
 (86, 'A.02.a', 'AIR FRESHINER REFILL, Automatic Spray Refill(glade), 269ml/175g', 'can'),
-(87, 'A.01.a', 'ARCHFILE FOLDER, Tagila Lock', 'pc'),
-(113, '123', '123', '123');
+(87, 'A.01.a', 'ARCHFILE FOLDER, Tagila Lock', 'pc');
 
 -- --------------------------------------------------------
 
@@ -155,7 +154,10 @@ CREATE TABLE `requisitions` (
   `issued_by_date` date DEFAULT NULL,
   `purpose` text DEFAULT NULL,
   `requesting_officer` varchar(255) DEFAULT NULL,
-  `authorized_official` varchar(255) DEFAULT NULL
+  `authorized_official` varchar(255) DEFAULT NULL,
+  `received_by_name` varchar(255) DEFAULT '',
+  `received_by_designation` varchar(255) DEFAULT '',
+  `received_by_date` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -216,7 +218,7 @@ ALTER TABLE `items`
 -- AUTO_INCREMENT for table `requisitions`
 --
 ALTER TABLE `requisitions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- AUTO_INCREMENT for table `requisition_items`

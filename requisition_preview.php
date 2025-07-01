@@ -80,27 +80,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_requisition'])) 
     $issued_by_name = $_POST['issued_by_name'] ?? '';
     $issued_by_designation = $_POST['issued_by_designation'] ?? '';
     $issued_by_date = $_POST['issued_by_date'] ?? '';
+    $received_by_name = $_POST['received_by_name'] ?? '';
+    $received_by_designation = $_POST['received_by_designation'] ?? '';
+    $received_by_date = $_POST['received_by_date'] ?? '';
     
     if ($existing_result->num_rows > 0) {
-        // Update existing requisition
-        $requisition_id = $existing_result->fetch_assoc()['id'];
-        $stmt = $conn->prepare("UPDATE requisitions SET entity_name=?, fund_cluster=?, division=?, responsibility_center=?, office=?, purpose=?, requesting_officer=?, authorized_official=?, requesting_officer_name=?, requesting_officer_designation=?, requesting_officer_date=?, approved_by_name=?, approved_by_designation=?, approved_by_date=?, issued_by_name=?, issued_by_designation=?, issued_by_date=?, updated_at=NOW() WHERE id=?");
-        
-        if ($stmt === false) {
-            die('MySQL prepare error: ' . $conn->error);
-        }
-        
-        $stmt->bind_param("sssssssssssssssssi", $entity_name, $fund_cluster, $division, $responsibility_center, $office, $purpose, $requesting_officer, $authorized_official, $requesting_officer_name, $requesting_officer_designation, $requesting_officer_date, $approved_by_name, $approved_by_designation, $approved_by_date, $issued_by_name, $issued_by_designation, $issued_by_date, $requisition_id);
-    } else {
-        // Insert new requisition
-        $stmt = $conn->prepare("INSERT INTO requisitions (entity_name, fund_cluster, division, responsibility_center, office, ris_no, purpose, requesting_officer, authorized_official, requesting_officer_name, requesting_officer_designation, requesting_officer_date, approved_by_name, approved_by_designation, approved_by_date, issued_by_name, issued_by_designation, issued_by_date, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-        
-        if ($stmt === false) {
-            die('MySQL prepare error: ' . $conn->error);
-        }
-        
-        $stmt->bind_param("ssssssssssssssssss", $entity_name, $fund_cluster, $division, $responsibility_center, $office, $ris_no, $purpose, $requesting_officer, $authorized_official, $requesting_officer_name, $requesting_officer_designation, $requesting_officer_date, $approved_by_name, $approved_by_designation, $approved_by_date, $issued_by_name, $issued_by_designation, $issued_by_date);
+    // Update existing requisition
+    $requisition_id = $existing_result->fetch_assoc()['id'];
+    $stmt = $conn->prepare("UPDATE requisitions SET entity_name=?, fund_cluster=?, division=?, responsibility_center=?, office=?, purpose=?, requesting_officer=?, authorized_official=?, requesting_officer_name=?, requesting_officer_designation=?, requesting_officer_date=?, approved_by_name=?, approved_by_designation=?, approved_by_date=?, issued_by_name=?, issued_by_designation=?, issued_by_date=?, received_by_name=?, received_by_designation=?, received_by_date=?, updated_at=NOW() WHERE id=?");
+    
+    if ($stmt === false) {
+        die('MySQL prepare error: ' . $conn->error);
     }
+    
+    $stmt->bind_param("ssssssssssssssssssssi", $entity_name, $fund_cluster, $division, $responsibility_center, $office, $purpose, $requesting_officer, $authorized_official, $requesting_officer_name, $requesting_officer_designation, $requesting_officer_date, $approved_by_name, $approved_by_designation, $approved_by_date, $issued_by_name, $issued_by_designation, $issued_by_date, $received_by_name, $received_by_designation, $received_by_date, $requisition_id);
+} else {
+    // Insert new requisition
+    $stmt = $conn->prepare("INSERT INTO requisitions (entity_name, fund_cluster, division, responsibility_center, office, ris_no, purpose, requesting_officer, authorized_official, requesting_officer_name, requesting_officer_designation, requesting_officer_date, approved_by_name, approved_by_designation, approved_by_date, issued_by_name, issued_by_designation, issued_by_date, received_by_name, received_by_designation, received_by_date, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+    
+    if ($stmt === false) {
+        die('MySQL prepare error: ' . $conn->error);
+    }
+    
+    $stmt->bind_param("sssssssssssssssssssss", $entity_name, $fund_cluster, $division, $responsibility_center, $office, $ris_no, $purpose, $requesting_officer, $authorized_official, $requesting_officer_name, $requesting_officer_designation, $requesting_officer_date, $approved_by_name, $approved_by_designation, $approved_by_date, $issued_by_name, $issued_by_designation, $issued_by_date, $received_by_name, $received_by_designation, $received_by_date);
+}
     
     $stmt->execute();
     $requisition_id = $requisition_id ?? $stmt->insert_id;
@@ -342,68 +345,84 @@ if ($selected_requisition) {
                     
                         <!-- Signature Block -->
                         <tr>
-                            <td colspan="2" style="border: none;"></td> <!-- shift to column 3 -->
-                            <th colspan="2">Requested by:</th>
-                            <th colspan="2">Approved by:</th>
-                            <th colspan="2">Issued by:</th>
-                        </tr>
-                        <tr>
-                            <td colspan="2" style="font-weight: bold;">Signature:</td>
-                            <td colspan="2">&nbsp;</td>
-                            <td colspan="2">&nbsp;</td>
-                            <td colspan="2">&nbsp;</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" style="font-weight: bold;">Printed Name:</td>
-                            <td colspan="2">
-                                <input type="text" name="requesting_officer_name" class="editable-input" style="width: 97%;" 
-                                    value="<?= htmlspecialchars($latest_req['requesting_officer_name'] ?? '') ?>" 
-                                    placeholder="Enter name">
-                            </td>
-                            <td colspan="2">
-                                <input type="text" name="approved_by_name" class="editable-input" style="width: 97%;" 
-                                    value="<?= htmlspecialchars($latest_req['approved_by_name'] ?? '') ?>" 
-                                    placeholder="Enter name">
-                            </td>
-                            <td colspan="2">
-                                <input type="text" name="issued_by_name" class="editable-input" style="width: 97%;" 
-                                    value="<?= htmlspecialchars($latest_req['issued_by_name'] ?? '') ?>" 
-                                    placeholder="Enter name">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" style="font-weight: bold;">Designation:</td>
-                            <td colspan="2">
-                                <input type="text" name="requesting_officer_designation" class="editable-input" style="width: 97%;" 
-                                    value="<?= htmlspecialchars($latest_req['requesting_officer_designation'] ?? '') ?>" 
-                                    placeholder="Enter designation">
-                            </td>
-                            <td colspan="2">
-                                <input type="text" name="approved_by_designation" class="editable-input" style="width: 97%;" 
-                                    value="<?= htmlspecialchars($latest_req['approved_by_designation'] ?? '') ?>" 
-                                    placeholder="Enter designation">
-                            </td>
-                            <td colspan="2">
-                                <input type="text" name="issued_by_designation" class="editable-input" style="width: 97%;" 
-                                    value="<?= htmlspecialchars($latest_req['issued_by_designation'] ?? '') ?>" 
-                                    placeholder="Enter designation">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" style="font-weight: bold;">Date:</td>
-                            <td colspan="2">
-                                <input type="date" name="requesting_officer_date" class="editable-input" style="width: 97%;" 
-                                    value="<?= htmlspecialchars($latest_req['requesting_officer_date'] ?? '') ?>">
-                            </td>
-                            <td colspan="2">
-                                <input type="date" name="approved_by_date" class="editable-input" style="width: 97%;" 
-                                    value="<?= htmlspecialchars($latest_req['approved_by_date'] ?? '') ?>">
-                            </td>
-                            <td colspan="2">
-                                <input type="date" name="issued_by_date" class="editable-input" style="width: 97%;" 
-                                    value="<?= htmlspecialchars($latest_req['issued_by_date'] ?? '') ?>">
-                            </td>
-                        </tr>
+                        <td colspan="2" style="border: none;"></td> <!-- shift to column 3 -->
+                        <th colspan="2">Requested by:</th>
+                        <th>Approved by:</th>
+                        <th>Issued by:</th>
+                        <th colspan="2">Received by:</th>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-weight: bold;">Signature:</td>
+                        <td colspan="2">&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td colspan="2">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-weight: bold;">Printed Name:</td>
+                        <td colspan="2">
+                            <input type="text" name="requesting_officer_name" class="editable-input" style="width: 97%;" 
+                                value="<?= htmlspecialchars($latest_req['requesting_officer_name'] ?? '') ?>" 
+                                placeholder="Enter name">
+                        </td>
+                        <td>
+                            <input type="text" name="approved_by_name" class="editable-input" style="width: 97%;" 
+                                value="<?= htmlspecialchars($latest_req['approved_by_name'] ?? '') ?>" 
+                                placeholder="Enter name">
+                        </td>
+                        <td>
+                            <input type="text" name="issued_by_name" class="editable-input" style="width: 97%;" 
+                                value="<?= htmlspecialchars($latest_req['issued_by_name'] ?? '') ?>" 
+                                placeholder="Enter name">
+                        </td>
+                        <td colspan="2">
+                            <input type="text" name="received_by_name" class="editable-input" style="width: 97%;" 
+                                value="<?= htmlspecialchars($latest_req['received_by_name'] ?? '') ?>" 
+                                placeholder="Enter name">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-weight: bold;">Designation:</td>
+                        <td colspan="2">
+                            <input type="text" name="requesting_officer_designation" class="editable-input" style="width: 97%;" 
+                                value="<?= htmlspecialchars($latest_req['requesting_officer_designation'] ?? '') ?>" 
+                                placeholder="Enter designation">
+                        </td>
+                        <td>
+                            <input type="text" name="approved_by_designation" class="editable-input" style="width: 97%;" 
+                                value="<?= htmlspecialchars($latest_req['approved_by_designation'] ?? '') ?>" 
+                                placeholder="Enter designation">
+                        </td>
+                        <td>
+                            <input type="text" name="issued_by_designation" class="editable-input" style="width: 97%;" 
+                                value="<?= htmlspecialchars($latest_req['issued_by_designation'] ?? '') ?>" 
+                                placeholder="Enter designation">
+                        </td>
+                        <td colspan="2">
+                            <input type="text" name="received_by_designation" class="editable-input" style="width: 97%;" 
+                                value="<?= htmlspecialchars($latest_req['received_by_designation'] ?? '') ?>" 
+                                placeholder="Enter designation">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-weight: bold;">Date:</td>
+                        <td colspan="2">
+                            <input type="date" name="requesting_officer_date" class="editable-input" style="width: 97%;" 
+                                value="<?= htmlspecialchars($latest_req['requesting_officer_date'] ?? '') ?>">
+                        </td>
+                        <td>
+                            <input type="date" name="approved_by_date" class="editable-input" style="width: 97%;" 
+                                value="<?= htmlspecialchars($latest_req['approved_by_date'] ?? '') ?>">
+                        </td>
+                        <td>
+                            <input type="date" name="issued_by_date" class="editable-input" style="width: 97%;" 
+                                value="<?= htmlspecialchars($latest_req['issued_by_date'] ?? '') ?>">
+                        </td>
+                        <td colspan="2">
+                            <input type="date" name="received_by_date" class="editable-input" style="width: 97%;" 
+                                value="<?= htmlspecialchars($latest_req['received_by_date'] ?? '') ?>">
+                        </td>
+                    </tr>
                 </table>
             </form>
         </div>

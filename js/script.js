@@ -31,17 +31,8 @@ function openEditModal(row) {
             document.getElementById('editForm').reset();
         }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const addModal = document.getElementById('addModal');
-            const editModal = document.getElementById('editModal');
-            if (event.target == addModal) {
-                closeAddModal();
-            }
-            if (event.target == editModal) {
-                closeEditModal();
-            }
-        }
+        // REMOVED: The window.onclick function that was closing modals when clicking outside
+        // Now modals only close when buttons are clicked or Escape key is pressed
 
         // Add Form Submit
         document.getElementById('addForm').addEventListener('submit', function(e) {
