@@ -45,15 +45,31 @@ if (isset($_GET['load_req']) && is_numeric($_GET['load_req'])) {
     if ($selected_requisition) {
         $latest_req = $selected_requisition;
     }
-} elseif (!isset($_GET['new'])) {
-    // Only load the latest requisition if not explicitly requesting a new slip
-    $latest_query = $conn->query("SELECT * FROM requisitions ORDER BY created_at DESC LIMIT 1");
-    if ($latest_query && $latest_query->num_rows > 0) {
-        $latest_req = $latest_query->fetch_assoc();
-    }
 } else {
-    // Clear slip - do not load any saved requisition
-    $latest_req = []; // Force all fields to be blank
+    // Always generate a new, auto-incremented RIS No.
+    $year = date('Y');
+    $month = date('m');
+    $prefix = "$year/$month";
+
+    $stmt = $conn->prepare("SELECT ris_no FROM requisitions WHERE ris_no LIKE ? ORDER BY created_at DESC LIMIT 1");
+    $like = $prefix . "/%";
+    $stmt->bind_param("s", $like);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $last_ris_no = $result->fetch_assoc()['ris_no'] ?? null;
+
+    if ($last_ris_no) {
+        $last_number = (int)substr($last_ris_no, -4);
+        $next_number = str_pad($last_number + 1, 4, '0', STR_PAD_LEFT);
+    } else {
+        $next_number = "0001";
+    }
+
+    $new_ris_no = "$year/$month/$next_number";
+
+    // Pre-fill the form with the new RIS No.
+    $latest_req = []; // Force all other fields to be blank
+    $latest_req['ris_no'] = $new_ris_no;
 }
 
 // Handle form submission for saving requisition data
@@ -126,6 +142,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_requisition'])) 
                 $stmt->bind_param("iiiiiss", $requisition_id, $item_id, $quantity, $stock_available_yes, $stock_available_no, $issue_quantity, $remarks);
                 $stmt->execute();
             }
+
+            if (!empty($issue_quantity)) {
+                $update_stock_stmt = $conn->prepare("UPDATE items SET quantity = quantity - ? WHERE id = ? AND quantity >= ?");
+                $update_stock_stmt->bind_param("iii", $issue_quantity, $item_id, $issue_quantity);
+                $update_stock_stmt->execute();
+            }
+
         }
     }
     
@@ -133,6 +156,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_requisition'])) 
     // Add timestamp to prevent caching
     header("Location: requisition_preview.php?success=1&new=1&t=" . time());
     exit;
+}
+
+if (isset($_GET['new'])) {
+    $year = date('Y');
+    $month = date('m');
+
+    // Get the last RIS No. of the current year and month
+    $prefix = "$year/$month";
+    $stmt = $conn->prepare("SELECT ris_no FROM requisitions WHERE ris_no LIKE ? ORDER BY created_at DESC LIMIT 1");
+    $like = $prefix . "/%";
+    $stmt->bind_param("s", $like);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $last_ris_no = $result->fetch_assoc()['ris_no'] ?? null;
+
+    if ($last_ris_no) {
+        $last_number = (int)substr($last_ris_no, -4);
+        $next_number = str_pad($last_number + 1, 4, '0', STR_PAD_LEFT);
+    } else {
+        $next_number = "0001";
+    }
+
+    $new_ris_no = "$year/$month/$next_number";
+
+    // Pre-fill the form with the new RIS No.
+    $latest_req['ris_no'] = $new_ris_no;
 }
 
 // Get all saved requisitions for sidebar
@@ -197,6 +246,10 @@ if ($selected_requisition) {
         <div class="container">
             <form method="POST" id="requisitionForm">
                 <div class="action-buttons">
+                    <div style="margin-bottom: 10px;">
+                        <input type="text" id="itemSearch" placeholder="🔍 Search stock no. or description..." 
+                            style="width: 100%; padding: 6px; font-size: 16px;">
+                    </div>
                     <a href="office_supplies.php" class="btn btn-back">← Back to Inventory</a>
                     <button type="button" class="btn btn-new" onclick="clearSlip()">🧹 Clear Slip</button>
                     <button type="submit" name="save_requisition" class="btn btn-save">💾 Save</button>
@@ -232,9 +285,12 @@ if ($selected_requisition) {
                         <tr>
                             <td class="left-align">
                                 Division: 
-                                <input type="text" name="division" class="editable-input" 
-                                       value="<?= htmlspecialchars($latest_req['division'] ?? '') ?>" 
-                                       placeholder="Enter division">
+                                <select name="division" class="editable-input" required>
+                                    <option value="">-- Select Division --</option>
+                                    <option value="ORD" <?= (isset($latest_req['division']) && $latest_req['division'] === 'ORD') ? 'selected' : '' ?>>ORD</option>
+                                    <option value="ROD" <?= (isset($latest_req['division']) && $latest_req['division'] === 'ROD') ? 'selected' : '' ?>>ROD</option>
+                                    <option value="FASD" <?= (isset($latest_req['division']) && $latest_req['division'] === 'FASD') ? 'selected' : '' ?>>FASD</option>
+                                </select>
                             </td>
                             <td class="left-align">
                                 Responsibility Center Code: 
@@ -247,8 +303,7 @@ if ($selected_requisition) {
                             <td class="left-align">
                                 Office: 
                                 <input type="text" name="office" class="editable-input" 
-                                       value="<?= htmlspecialchars($latest_req['office'] ?? '') ?>" 
-                                       placeholder="Enter office">
+                                    value="TESDA-CAR" readonly>
                             </td>
                             <td class="left-align">
                                 RIS No.: 
@@ -426,8 +481,9 @@ if ($selected_requisition) {
                 </table>
             </form>
         </div>
-    </div>
-    <script src="js/requisition_script.js"></script>
+    </div>=
+    <script src="js/requisition_script.js">
+    </script>
     
 </body>
 </html>

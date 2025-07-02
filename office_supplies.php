@@ -23,9 +23,12 @@
             </div>
         </div>
         <div class="right-controls">
-            <a href="requisition_preview.php?t=123456" class="requisition-btn">Export Items to RIS</a>
             <a href="export_excel_office.php" class="export-btn">Export as Excel</a>
         </div>
+    </div>
+    <div style="margin-bottom: 10px;">
+        <input type="text" id="itemSearch" placeholder="🔍 Search stock no., description, or unit..."
+            style="width: 100%; padding: 6px; font-size: 16px;">
     </div>
 
     <div class="table-container">
@@ -35,6 +38,8 @@
                     <th>Stock No.</th>
                     <th>Description</th>
                     <th>Unit</th>
+                    <th>Unit Cost</th>
+                    <th>Quantity</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -47,6 +52,8 @@
                     <td class="stock_no"><?= htmlspecialchars($row['stock_no']) ?></td>
                     <td class="description"><?= htmlspecialchars($row['description']) ?></td>
                     <td class="unit"><?= htmlspecialchars($row['unit']) ?></td>
+                    <td class="unit_cost"><?= htmlspecialchars($row['unit_cost'] ?? '0') ?></td>
+                    <td class="quantity"><?= htmlspecialchars($row['quantity'] ?? '0') ?></td>
                     <td>
                         <button class="btn edit">Edit</button>
                         <button class="btn delete">Delete</button>
@@ -77,6 +84,14 @@
                     <label>Unit</label>
                     <input type="text" name="unit" placeholder="Enter unit (e.g., Piece, Box, Ream)" required>
                 </div>
+                <div>
+                    <label>Unit Cost</label>
+                    <input type="number" name="unit_cost" placeholder="Enter unit cost" min="0" step="0.01" required>
+                </div>
+                <div>
+                    <label>Quantity</label>
+                    <input type="number" name="quantity" placeholder="Enter quantity" min="0" required>
+                </div>
                 <div class="modal-buttons">
                     <button type="button" class="modal-btn secondary" onclick="closeAddModal()">Cancel</button>
                     <button type="submit" class="modal-btn primary">Add Item</button>
@@ -105,6 +120,14 @@
                 <div>
                     <label>Unit</label>
                     <input type="text" id="editUnit" name="unit" placeholder="Enter unit (e.g., Piece, Box, Ream)" required>
+                </div>
+                <div>
+                    <label>Unit Cost</label>
+                    <input type="number" id="editUnitCost" name="unit_cost" placeholder="Enter unit cost" min="0" step="0.01" required>
+                </div>
+                <div>
+                    <label>Quantity</label>
+                    <input type="number" id="editQuantity" name="quantity" placeholder="Enter quantity" min="0" required>
                 </div>
                 <div class="modal-buttons">
                     <button type="button" class="modal-btn secondary" onclick="closeEditModal()">Cancel</button>

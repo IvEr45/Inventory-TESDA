@@ -12,6 +12,30 @@ function clearSlip() {
                 formChanged = false;
             }
         }
+        document.getElementById('itemSearch').addEventListener('input', function () {
+            const searchValue = this.value.toLowerCase().trim();
+            const tableRows = document.querySelectorAll('.main-table tbody tr');
+
+            tableRows.forEach(row => {
+                const stockNo = row.cells[0]?.textContent.toLowerCase() || '';
+                const unit = row.cells[1]?.textContent.toLowerCase() || '';
+                const description = row.cells[2]?.textContent.toLowerCase() || '';
+
+                const isMatch =
+                    stockNo.includes(searchValue) ||
+                    unit.includes(searchValue) ||
+                    description.includes(searchValue);
+
+                // Skip filtering for empty/padding rows
+                const isEmptyRow = [...row.cells].every(cell => cell.textContent.trim() === '');
+                if (isEmptyRow) {
+                    row.style.display = '';
+                    return;
+                }
+
+                row.style.display = isMatch ? '' : 'none';
+            });
+        });
 
 
         // Auto-save functionality (optional)
